@@ -1,19 +1,99 @@
 import { Router, Request, Response } from 'express';
-import { ChatMessage, ApiResponse } from '@bank-app/shared';
+import { ChatMessage, ApiResponse, VisualizationData, TableData, IntentType } from '@bank-app/shared';
+import fetch from 'node-fetch'; // ensure this is installed
 
 const router = Router();
 
-/**
- * POST /api/conversation/message
- * Send a message and get a placeholder response
- * 
- * TODO: Implement actual conversation logic
- * - Add AI/NLP integration for intent classification
- * - Add entity extraction from user messages
- * - Implement business logic for each intent type
- * - Add conversation context management
- * - Add validation and error handling
- */
+interface BackendUIMessage {
+  type: 'text';
+  content: string;
+}
+
+interface BackendChartComponent {
+  type: 'chart';
+  chartType: 'pie' | 'bar';
+  title: string;
+  data: any[];
+}
+
+interface BackendTableComponent {
+  type: 'table';
+  title: string;
+  columns: string[];
+  rows: string[][];
+}
+
+interface BackendResponse {
+  query: {
+    intent?: IntentType;
+    is_banking_domain?: boolean;
+    time_range?: any;
+    params?: any;
+  };
+  ui: {
+    messages: BackendUIMessage[];
+    components: Array<BackendChartComponent | BackendTableComponent>;
+  };
+}
+
+// Adapter: BackendResponse → ChatMessage[]
+function mapBackendResponseToChatMessages(response: BackendResponse): ChatMessage[] {
+  const messages: ChatMessage[] = [];
+
+  // Text messages
+  for (const msg of response.ui.messages) {
+    messages.push({
+      id: `msg-${Date.now()}-assistant`,
+      role: 'assistant',
+      content: msg.content,
+      timestamp: new Date(),
+      metadata: {
+        intent: response.query.intent,
+      },
+    });
+  }
+
+  // Components (charts / tables)
+  for (const component of response.ui.components) {
+    if (component.type === 'chart') {
+      const visualizationData: VisualizationData = {
+        type: component.chartType,
+        title: component.title,
+        data: component.data.map(d => ({
+          label: d.category ?? d.merchant ?? d.label,
+          value: d.total ?? d.value,
+        })),
+      };
+
+      messages.push({
+        id: `msg-${Date.now()}-assistant`,
+        role: 'assistant',
+        content: component.title,
+        timestamp: new Date(),
+        metadata: { visualizationData },
+      });
+    }
+
+    if (component.type === 'table') {
+      const tableData: TableData = {
+        title: component.title,
+        columns: component.columns,
+        rows: component.rows,
+      };
+
+      messages.push({
+        id: `msg-${Date.now()}-assistant`,
+        role: 'assistant',
+        content: component.title,
+        timestamp: new Date(),
+        metadata: { tableData },
+      });
+    }
+  }
+
+  return messages;
+}
+
 router.post('/message', async (req: Request, res: Response) => {
   try {
     const { message, userId = 'default-user' } = req.body;
@@ -25,7 +105,7 @@ router.post('/message', async (req: Request, res: Response) => {
       });
     }
 
-    // Create user message
+    // User message
     const userMessage: ChatMessage = {
       id: `msg-${Date.now()}-user`,
       role: 'user',
@@ -33,34 +113,36 @@ router.post('/message', async (req: Request, res: Response) => {
       timestamp: new Date(),
     };
 
-    // TODO: Replace this placeholder with actual conversation processing
-    // Example implementation needed:
-    // 1. Call AI service to classify intent and extract entities
-    // 2. Route to appropriate handler based on intent
-    // 3. Execute business logic (check balance, transfer, etc.)
-    // 4. Format response with relevant data
-    
-    const assistantMessage: ChatMessage = {
-      id: `msg-${Date.now()}-assistant`,
-      role: 'assistant',
-      content: 'This is a placeholder response. Please implement the conversation logic based on your requirements.',
-      timestamp: new Date(),
-      metadata: {
-        intent: 'general_inquiry',
-        entities: {},
-      },
-    };
+    // -----------------------------
+    // Real backend API call
+    // -----------------------------
+    const backendUrl = process.env.AI_BACKEND_URL || 'http://localhost:8000/chat';
+    const backendRes = await fetch(backendUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accountId: 'A123', message }),
+    });
 
-    const response: ApiResponse<ChatMessage> = {
+    if (!backendRes.ok) {
+      throw new Error(`Backend returned ${backendRes.status}`);
+    }
+
+    const backendResponse: BackendResponse = await backendRes.json();
+
+    // Map to ChatMessage[]
+    const assistantMessages = mapBackendResponseToChatMessages(backendResponse);
+
+    // Return both user and assistant messages
+    const responsePayload: ApiResponse<ChatMessage[]> = {
       success: true,
-      data: assistantMessage,
+      data: [userMessage, ...assistantMessages],
       metadata: {
         timestamp: new Date(),
         requestId: `req-${Date.now()}`,
       },
     };
 
-    res.json(response);
+    res.json(responsePayload);
   } catch (error: any) {
     console.error('Conversation error:', error);
     res.status(500).json({

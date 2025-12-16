@@ -1,9 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { ChatMessage } from '@bank-app/shared';
-import { User, Bot } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
+import { ChatMessage, TableData, VisualizationData } from '@bank-app/shared';
 import ChartVisualization from './ChartVisualization';
 
 interface MessageBubbleProps {
@@ -11,52 +8,54 @@ interface MessageBubbleProps {
 }
 
 export default function MessageBubble({ message }: MessageBubbleProps) {
-  const [mounted, setMounted] = useState(false);
   const isUser = message.role === 'user';
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   return (
-    <div className={`flex gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
-      {/* Avatar */}
-      <div
-        className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center shadow-sm ${
-          isUser ? 'bg-primary-700' : 'bg-neutral-200'
-        }`}
-      >
-        {isUser ? <User size={18} className="text-white" /> : <Bot size={18} className="text-primary-700" />}
-      </div>
+    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
+      <div className={`p-4 rounded-lg max-w-[70%] ${isUser ? 'bg-blue-100' : 'bg-gray-100'}`}>
+        {/* Text content */}
+        {message.content && (
+          <p className="whitespace-pre-wrap">{message.content}</p>
+        )}
 
-      {/* Message Content */}
-      <div className={`flex flex-col max-w-[70%] ${isUser ? 'items-end' : 'items-start'}`}>
-        <div
-          className={`rounded-lg px-5 py-3 shadow-sm ${
-            isUser
-              ? 'bg-primary-700 text-white'
-              : 'bg-neutral-100 text-neutral-900 border border-neutral-200'
-          }`}
-        >
-          <ReactMarkdown className="text-sm prose prose-sm max-w-none">
-            {message.content}
-          </ReactMarkdown>
-        </div>
-
-        {/* Visualization if present */}
+        {/* Chart content */}
         {message.metadata?.visualizationData && (
-          <div className="mt-3 w-full">
+          <div className="mt-4">
             <ChartVisualization data={message.metadata.visualizationData} />
           </div>
         )}
 
-        {/* Timestamp */}
-        {mounted && (
-          <span className="text-xs text-neutral-500 mt-1">
-            {new Date(message.timestamp).toLocaleTimeString()}
-          </span>
+        {/* Table content */}
+        {message.metadata?.tableData && (
+          <div className="mt-4 overflow-x-auto">
+            <TableRenderer table={message.metadata.tableData} />
+          </div>
         )}
       </div>
     </div>
+  );
+}
+
+// Simple Table Renderer
+function TableRenderer({ table }: { table: TableData }) {
+  return (
+    <table className="table-auto border-collapse border border-gray-300 w-full text-sm">
+      <thead>
+        <tr>
+          {table.columns.map((col, idx) => (
+            <th key={idx} className="border px-2 py-1 bg-gray-200 text-left">{col}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {table.rows.map((row, idx) => (
+          <tr key={idx} className="even:bg-gray-50">
+            {row.map((cell, i) => (
+              <td key={i} className="border px-2 py-1">{cell}</td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
