@@ -56,6 +56,7 @@ export interface ChatMessage {
     intent?: IntentType;
     entities?: Record<string, any>;
     visualizationData?: VisualizationData;
+    tableData?: TableData;
   };
 }
 

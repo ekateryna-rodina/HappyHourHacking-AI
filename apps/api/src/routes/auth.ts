@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
+import type { StringValue } from 'ms';
 
 const router = Router();
 
@@ -35,10 +36,11 @@ router.post('/register', async (req: Request, res: Response) => {
     };
 
     // Generate JWT
+    const expiresIn = (process.env.JWT_EXPIRES_IN || '7d') as StringValue;
     const token = jwt.sign(
       { userId: user.id, email: user.email },
       process.env.JWT_SECRET || 'secret',
-      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+      { expiresIn }
     );
 
     res.status(201).json({
@@ -98,10 +100,11 @@ router.post('/login', async (req: Request, res: Response) => {
     }
 
     // Generate JWT
+    const expiresIn = (process.env.JWT_EXPIRES_IN || '7d') as StringValue;
     const token = jwt.sign(
       { userId: user.id, email: user.email },
       process.env.JWT_SECRET || 'secret',
-      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+      { expiresIn }
     );
 
     res.json({
