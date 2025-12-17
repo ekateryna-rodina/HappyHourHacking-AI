@@ -121,7 +121,7 @@ export default function ChatInterface() {
   ];
 
   return (
-    <div className="bg-white rounded-lg shadow-md border border-neutral-200 max-w-5xl mx-auto h-[calc(100vh-12rem)] flex">
+    <div className="bg-white rounded-lg shadow-md border border-neutral-200 max-w-7xl mx-auto h-[calc(100vh-12rem)] flex">
       {showHistory && (
         <div className="w-80 border-r border-neutral-200 flex-shrink-0">
           <ChatHistory onClose={() => setShowHistory(false)} onClearAll={handleClearAll} />

@@ -11,10 +11,15 @@ interface MessageBubbleProps {
 
 export default function MessageBubble({ message }: MessageBubbleProps) {
   const isUser = message.role === 'user';
+  const hasTable = !!message.metadata?.tableData;
+  const hasChart = !!message.metadata?.visualizationData;
+  
+  // Use wider width for tables and charts
+  const maxWidth = hasTable || hasChart ? 'max-w-[95%]' : 'max-w-[70%]';
 
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
-      <div className={`p-4 rounded-lg max-w-[70%] ${isUser ? 'bg-blue-100' : 'bg-gray-100'}`}>
+      <div className={`p-4 rounded-lg ${maxWidth} ${isUser ? 'bg-blue-100' : 'bg-gray-100'}`}>
         {/* Text content */}
         {message.content && (
           <p className="whitespace-pre-wrap">{message.content}</p>
