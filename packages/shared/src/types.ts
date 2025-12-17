@@ -72,9 +72,9 @@ export type IntentType =
   | 'visualize_data';
 
   export interface TableData {
-    title: string,
-    columns: string[],
-    rows: string[][],
+    title: string;
+    columns: string[];
+    rows: string[][];
   }
 
 export interface ConversationContext {
