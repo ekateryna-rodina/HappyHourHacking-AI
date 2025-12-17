@@ -59,6 +59,7 @@ export interface ChatMessage {
   };
 }
 
+
 export type IntentType =
   | 'check_balance'
   | 'view_transactions'
@@ -69,6 +70,12 @@ export type IntentType =
   | 'loan_eligibility'
   | 'general_inquiry'
   | 'visualize_data';
+
+  export interface TableData {
+    title: string,
+    columns: string[],
+    rows: string[][],
+  }
 
 export interface ConversationContext {
   userId: string;
@@ -176,3 +183,4 @@ export interface PaginatedResponse<T> extends ApiResponse<T[]> {
     hasMore: boolean;
   };
 }
+
