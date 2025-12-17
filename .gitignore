@@ -52,3 +52,8 @@ ENV/
 # Test files with API keys
 apps/tests/.env.json
 apps/tests/openai-direct.http
+
+.env*.local
+.env
+apps/tests/.env.json
+apps/tests/openai-direct.http
