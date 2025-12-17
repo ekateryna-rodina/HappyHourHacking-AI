@@ -116,7 +116,7 @@ router.post('/message', async (req: Request, res: Response) => {
     // -----------------------------
     // Real backend API call
     // -----------------------------
-    const backendUrl = process.env.AI_BACKEND_URL || 'http://localhost:8000/chat';
+    const backendUrl = process.env.AI_BACKEND_URL || 'http://174.138.83.171:8000/chat';
     const backendRes = await fetch(backendUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
