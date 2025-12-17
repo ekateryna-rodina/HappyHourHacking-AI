@@ -1,0 +1,147 @@
+### Test Conversation API - Balance Check
+POST http://localhost:3001/api/conversation/message
+Content-Type: application/json
+
+{
+  "message": "What's my checking account balance?",
+  "userId": "user-123"
+}
+
+###
+
+### Test Conversation API - Show Spending
+POST http://localhost:3001/api/conversation/message
+Content-Type: application/json
+
+{
+  "message": "Show my spending this month",
+  "userId": "user-123"
+}
+
+###
+
+### Test Conversation API - Transfer Money
+POST http://localhost:3001/api/conversation/message
+Content-Type: application/json
+
+{
+  "message": "Transfer $100 from checking to savings",
+  "userId": "user-123"
+}
+
+###
+
+### Test Conversation API - Transaction History
+POST http://localhost:3001/api/conversation/message
+Content-Type: application/json
+
+{
+  "message": "Show my recent transactions",
+  "userId": "user-123"
+}
+
+###
+
+### Test Conversation API - Spending by Category
+POST http://localhost:3001/api/conversation/message
+Content-Type: application/json
+
+{
+  "message": "How much did I spend on dining?",
+  "userId": "user-123"
+}
+
+###
+
+### Test Conversation API - Loan Eligibility
+POST http://localhost:3001/api/conversation/message
+Content-Type: application/json
+
+{
+  "message": "Am I eligible for a home loan?",
+  "userId": "user-123"
+}
+
+###
+
+### Test Conversation API - General Question
+POST http://localhost:3001/api/conversation/message
+Content-Type: application/json
+
+{
+  "message": "What banking services do you offer?",
+  "userId": "user-123"
+}
+
+###
+
+### Test Conversation API - With Conversation History
+POST http://localhost:3001/api/conversation/message
+Content-Type: application/json
+
+{
+  "message": "What about my savings account?",
+  "userId": "user-123",
+  "conversationHistory": [
+    {
+      "role": "user",
+      "content": "What's my checking balance?"
+    },
+    {
+      "role": "assistant",
+      "content": "Your checking account balance is $5,420.50"
+    }
+  ]
+}
+
+###
+
+### Test Get Accounts
+GET http://localhost:3001/api/accounts
+
+###
+
+### Test Get Transactions
+GET http://localhost:3001/api/transactions
+
+###
+
+### Test Get Spending Insights
+GET http://localhost:3001/api/insights/spending?period=month
+
+###
+
+### Test Transfer (POST)
+POST http://localhost:3001/api/transactions/transfer
+Content-Type: application/json
+
+{
+  "fromAccount": "checking",
+  "toAccount": "savings",
+  "amount": 100.00
+}
+
+###
+
+### Test Direct OpenAI API (if you want to test raw OpenAI)
+POST https://api.openai.com/v1/chat/completions
+Content-Type: application/json
+Authorization: Bearer {{$processEnv OPENAI_API_KEY}}
+
+{
+  "model": "gpt-4",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a helpful banking assistant."
+    },
+    {
+      "role": "user",
+      "content": "What's my account balance?"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 500
+}
+
+###
